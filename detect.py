@@ -9,7 +9,7 @@ def get_login_attempts():
     conn = sqlite3.connect(DB_FILE)
     conn.row_factory = sqlite3.Row
     rows = conn.execute(
-        "SELECT src_ip, timestamp, username, password FROM events "
+        "SELECT src_ip, dst_port, timestamp, username, password FROM events "
         "WHERE event_type = 'login_attempt' ORDER BY timestamp"
     ).fetchall()
     conn.close()
@@ -26,13 +26,14 @@ def get_commands():
     return rows
 
 def detect_brute_force(rows, threshold=5, window_seconds=60):
-    attempts_by_ip = defaultdict(list)
+    attempts_by_key = defaultdict(list)
     for row in rows:
         ts = datetime.fromisoformat(row["timestamp"])
-        attempts_by_ip[row["src_ip"]].append(ts)
+        key = (row["src_ip"], row["dst_port"])
+        attempts_by_key[key].append(ts)
 
     alerts = []
-    for ip, timestamps in attempts_by_ip.items():
+    for (ip, port), timestamps in attempts_by_key.items():
         timestamps.sort()
         for i in range(len(timestamps) - threshold + 1):
             window_start = timestamps[i]
@@ -43,6 +44,7 @@ def detect_brute_force(rows, threshold=5, window_seconds=60):
                     "technique": "T1110",
                     "technique_name": "Brute Force",
                     "src_ip": ip,
+                    "dst_port": port,
                     "attempt_count": threshold,
                     "window_seconds": round(gap, 2),
                     "first_attempt": window_start.isoformat(),

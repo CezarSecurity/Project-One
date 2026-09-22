@@ -124,7 +124,8 @@ async def main():
     await start_server()
     await asyncio.Event().wait()
 
-try:
-    asyncio.run(main())
-except KeyboardInterrupt:
-    print("\nStopped")
+if __name__ == "__main__":
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        print("\nStopped")
