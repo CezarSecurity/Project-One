@@ -1,18 +1,10 @@
 import asyncio
 import asyncssh
-import json
 from datetime import datetime, timezone
-from pathlib import Path
-from db import init_db, insert_event
+from storage import log_event, init_db, insert_event
 
 HOST = "127.0.0.1"
 PORT = 2222
-LOG_FILE = Path("logs/events.jsonl")
-
-def log_event(event : dict) -> None:
-    LOG_FILE.parent.mkdir(exist_ok=True)
-    with open(LOG_FILE, "a") as f:
-        f.write(json.dumps(event) + "\n")
 
 async def handle_session(process: asyncssh.SSHServerProcess) -> None:
     peer = process.get_extra_info("peername")

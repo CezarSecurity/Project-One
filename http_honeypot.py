@@ -2,8 +2,7 @@ import asyncio
 from datetime import datetime, timezone
 from aiohttp import web
 
-from db import init_db, insert_event
-from ssh_honeypot import log_event
+from storage import init_db, insert_event, log_event
 
 HOST = "127.0.0.1"
 PORT = 8080

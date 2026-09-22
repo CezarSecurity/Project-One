@@ -1,7 +1,14 @@
+import json
 import sqlite3
 from pathlib import Path
 
-DB_FILE = Path("Logs/events.db")
+LOG_FILE = Path("logs/events.jsonl")
+DB_FILE = Path("logs/events.db")
+
+def log_event(event: dict) -> None:
+    LOG_FILE.parent.mkdir(exist_ok=True)
+    with open(LOG_FILE, "a") as f:
+        f.write(json.dumps(event) + "\n")
 
 def init_db() -> None:
     DB_FILE.parent.mkdir(exist_ok=True)
@@ -18,7 +25,7 @@ def init_db() -> None:
             password TEXT,
             command TEXT
         )
-    """)
+    """ )
     conn.commit()
     conn.close()
 
