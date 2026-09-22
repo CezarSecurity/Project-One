@@ -58,7 +58,7 @@ def build_app() -> web.Application:
 async def main():
     init_db()
     app = build_app()
-    runner = web.AppRunner(app)
+    runner = web.AppRunner(app, server_header="nginx")
     await runner.setup()
     site = web.TCPSite(runner, HOST, PORT)
     await site.start()
