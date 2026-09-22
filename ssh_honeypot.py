@@ -3,6 +3,7 @@ import asyncssh
 import json
 from datetime import datetime, timezone
 from pathlib import Path
+from db import init_db, insert_event
 
 HOST = "127.0.0.1"
 PORT = 2222
@@ -25,7 +26,7 @@ async def handle_session(process: asyncssh.SSHServerProcess) -> None:
             except asyncio.TimeoutError:
                 process.stdout.write("\r\nIdle timeout. \r\n")
                 break
-            
+
             if not line:
                 break
             command = line.rstrip("\r\n")
@@ -39,7 +40,7 @@ async def handle_session(process: asyncssh.SSHServerProcess) -> None:
                 "username": username,
                 "command": command,
             }
-            log_event(event)
+            insert_event(event)
 
             if command in ("exit", "logout"):
                 break
@@ -104,7 +105,7 @@ class HoneypotSSHServer(asyncssh.SSHServer):
             "username": username,
             "password": password,
         }
-        log_event(event)
+        insert_event(event)
         print(f"Login attempt: {username} / {password}")
         return True
 
@@ -119,6 +120,7 @@ async def start_server():
     print(f"Fake SSH server listening on {HOST}:{PORT}")
 
 async def main():
+    init_db()
     await start_server()
     await asyncio.Event().wait()
 
