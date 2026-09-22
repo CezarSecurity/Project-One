@@ -3,3 +3,5 @@ __pycache__/
 logs/
 ssh_host_key
 ssh_host_key.pub
+users.txt
+passwords.txt
