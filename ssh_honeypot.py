@@ -13,8 +13,27 @@ def log_event(event : dict) -> None:
     with open(LOG_FILE, "a") as f:
         f.write(json.dumps(event) + "\n")
 
+async def handle_session(process: asyncssh.SSHServerProcess) -> None:
+    process.stdout.write("Welcome to Ubuntu 22.04.3 LTS\r\n")
+    while True:
+        process.stdout.write("$ ")
+        line = await process.stdin.readline()
+        if not line:
+            break
+        command = line.rstrip("\r\n")
+        if command in ("exit", "logout"):
+            break
+        elif command == "whoami":
+            process.stdout.write("root\r\n")
+        elif command == "pwd":
+            process.stdout.write("/root\r\n")
+        else:
+            process.stdout.write(f"bash: {command}: command not found\r\n")
+    process.exit(0)
+
 class HoneypotSSHServer(asyncssh.SSHServer):
     def connection_made(self, conn):
+        self._conn = conn
         peer = conn.get_extra_info("peername")
         print(f"SSH connection from {peer}")
 
@@ -37,14 +56,15 @@ class HoneypotSSHServer(asyncssh.SSHServer):
         }
         log_event(event)
         print(f"Login attempt: {username} / {password}")
-        return False
+        return True
 
 async def start_server():
     await asyncssh.create_server(
         HoneypotSSHServer,
         HOST,
         PORT,
-        server_host_keys=["ssh_host_key"]
+        server_host_keys=["ssh_host_key"],
+        process_factory=handle_session
     )
     print(f"Fake SSH server listening on {HOST}:{PORT}")
 
