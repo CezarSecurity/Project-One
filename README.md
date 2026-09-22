@@ -41,7 +41,7 @@ http_honeypot.py --> storage.py
 ## Quick Start
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/CezarSecurity/Project-One.git
 cd "Project One"
 python3 -m venv .venv
 source .venv/bin/activate
